@@ -73,15 +73,38 @@ include_directories(${plugin_SOURCE_DIR}/src)
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 add_compile_options(-Wno-unknown-warning-option)
 
+set(LUA_URL https://www.lua.org/ftp/lua-5.4.3.tar.gz)
 include(ExternalProject)
-ExternalProject_Add(lua
-  URL https://www.lua.org/ftp/lua-5.4.3.tar.gz
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND make $<IF:$<BOOL:LINUX>,linux-readline,guess> MYCFLAGS=-fPIC
-  BUILD_IN_SOURCE TRUE
-  INSTALL_COMMAND make install INSTALL_TOP=${CMAKE_BINARY_DIR}/lua
-  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-)
+if (WIN32)
+  set(WIN_FOLDER ${CMAKE_CURRENT_LIST_DIR}/windows)
+  ExternalProject_Add(lua
+    PREFIX ${WIN_FOLDER}/lua
+    DOWNLOAD_DIR ${WIN_FOLDER}/lua
+    SOURCE_DIR ${WIN_FOLDER}/lua
+    BINARY_DIR ${WIN_FOLDER}/lua-build
+    STAMP_DIR ${WIN_FOLDER}/stamp
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    URL ${LUA_URL}
+    PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${WIN_FOLDER}/CMakeLists.txt ${WIN_FOLDER}/lua/CMakeLists.txt
+  )
+  include_directories(
+    ${WIN_FOLDER}/lua/src
+  )
+  link_directories(${WIN_FOLDER}/lib)
+else()
+  ExternalProject_Add(lua
+    URL ${LUA_URL}
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND make $<IF:$<BOOL:LINUX>,linux-readline,guess> MYCFLAGS=-fPIC
+    BUILD_IN_SOURCE TRUE
+    INSTALL_COMMAND make install INSTALL_TOP=${CMAKE_BINARY_DIR}/lua
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+  )
+  include_directories(
+    ${CMAKE_BINARY_DIR}/lua/include
+  )
+  link_directories(${CMAKE_BINARY_DIR}/lua/lib)
+endif()
 
 # MACROS #######################################################################
 # Call: add_plugin(name [SRCS src1 src2 ...] [LIBS lib1 lib2 ...])
@@ -120,10 +143,8 @@ else()
 endif()
 include_directories(
   ${json_SOURCE_DIR}/include 
-  ${CMAKE_BINARY_DIR}/lua/include
   ${sol2_SOURCE_DIR}/include
 )
-link_directories(${CMAKE_BINARY_DIR}/lua/lib)
 
 # These plugins are always build and use for testing
 add_plugin(lua_source LIBS liblua.a)
