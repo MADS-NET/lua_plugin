@@ -79,7 +79,13 @@ public:
   void set_params(void const *params) override {
     Filter::set_params(params);
     _params["script_file"] = "filter.lua";
+    _params["search_paths"] = json::array();
     _params.merge_patch(*(json *)params);
+
+    for (auto &path : _params["search_paths"]) {
+      _default_paths.push_back(filesystem::path(path));
+    }
+
     _script_file = _params["script_file"];
     _script_path = filesystem::path(_script_file);
     if (!_script_path.is_absolute()) {
@@ -154,12 +160,12 @@ end
   // those are the defauilt paths where the script can be found
   // RELATIVE to the current executable!
   vector<filesystem::path> _default_paths = {
-        "../scripts",
-        "../lua",
-        "./scripts",
         "./lua",
-        INSTALL_PREFIX "/scripts", 
-        INSTALL_PREFIX "/lua" 
+        "./scripts",
+        "../lua",
+        "../scripts",
+        INSTALL_PREFIX "/lua",
+        INSTALL_PREFIX "/scripts"
       };
 };
 
@@ -189,6 +195,7 @@ int main(int argc, char const *argv[]) {
   json input, output;
 
   params["script_file"] = "filter.lua";
+
   if (argc > 1) {
     params["script_file"] = argv[1];
   }

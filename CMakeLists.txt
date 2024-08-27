@@ -127,6 +127,7 @@ link_directories(${CMAKE_BINARY_DIR}/lua-prefix/src/lua/src)
 
 # These plugins are always build and use for testing
 add_plugin(filter LIBS liblua.a)
+add_dependencies(filter lua)
 
 
 # INSTALL ######################################################################
@@ -146,4 +147,4 @@ else()
     ARCHIVE DESTINATION lib
   )
 endif()
-install(DIRECTORY ${SRC_DIR}/lua DESTINATION lua)
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/lua DESTINATION .)
