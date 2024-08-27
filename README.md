@@ -76,15 +76,25 @@ All settings are optional; if omitted, the default values are used.
 
 ## Lua details
 
-### Filter plugin (`lua_filter.plugin`)
-
-The lua script has the package search list set to the same directories above detailed, where lua scripts are loaded. If you need an additional library or script, just put it in one of those dirs and require it.
+The lua script has the package search list set to the same directories above detailed, where lua scripts are loaded. If you need an additional library or scripts, just put it in one of those dirs and require it.
 
 The Lua script has available the [JSON library](https://github.com/rxi/json.lua), loaded as `json`.
 
 The Lua script defines the table `MADS` with the fields `data` and `topic`. These fields are automatically updated by the plugin upon receiving a new payload.
 
+### Source plugin (`lua_source.plugin`)
+
+The Lua script **must implement** the function `MADS::get_output()`, which is called by the plugin obtaining a new payload. The function must return a JSON-formatted string (use `json.encode(self.data)`).
+
+### Filter plugin (`lua_filter.plugin`)
+
 The Lua script **must implement** the function `MADS::process()`, which is called by the plugin for each payload. The function must return a JSON-formatted string (use `json.encode(self.data)`).
+
+### Sink plugin (`lua_sink.plugin`)
+
+The Lua script **must implement** the function `MADS::deal_with_data()`, which is called by the plugin for each payload. The function must return nothing.
+
+Note that the library [ansicolors](https://github.com/kikito/ansicolors.lua) is available (but not loaded by default). If you need it, just require it in your script as `local col = require("ansicolors")`.
 
 
 ---

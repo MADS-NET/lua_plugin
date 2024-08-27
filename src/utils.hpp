@@ -104,8 +104,8 @@ std::filesystem::path exec_dir(std::filesystem::path relative = "") {
   }
 }
 
-
-filesystem::path try_paths(vector<filesystem::path> paths, filesystem::path file) {
+filesystem::path try_paths(vector<filesystem::path> paths,
+                           filesystem::path file) {
   for (auto &path : paths) {
     if (!path.is_absolute()) {
       path = exec_dir(path);
@@ -117,5 +117,81 @@ filesystem::path try_paths(vector<filesystem::path> paths, filesystem::path file
   return file;
 }
 
+class LuaPlugin {
+
+protected:
+  void prepare_paths(json &params) {
+    for (auto &path : params["search_paths"]) {
+      _default_paths.push_back(filesystem::path(path));
+    }
+
+    _script_file = params["script_file"];
+    _script_path = filesystem::path(_script_file);
+    if (!_script_path.is_absolute()) {
+      _script_file = MADS::try_paths(_default_paths, _script_path);
+    }
+  }
+
+  void prepare_lua(string method = "") {
+    _lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string,
+                        sol::lib::table, sol::lib::math, sol::lib::string,
+                        sol::lib::os, sol::lib::io);
+    for (auto &path : _default_paths) {
+      if (!path.is_absolute()) {
+        path = MADS::exec_dir() / path;
+      }
+      LUA_ADD_PATH(_lua, path.string() + "/?.lua");
+    }
+    _lua.script(R"END(
+json = require("json")
+MADS = {}
+function MADS.dump(o)
+  if type(o) == 'table' then
+     local s = '{'
+     for k,v in pairs(o) do
+        if type(k) == 'number' then 
+          s = s .. k .. ", "
+        else 
+          s = s .. k .. ": " .. MADS.dump(v) .. ', '
+        end
+     end
+     s = string.sub(s, 1, -3)
+     return s .. '}'
+  else
+    if type(o) == "string" then
+      return '"' .. o .. '"'
+    else
+      return tostring(o)
+    end
+  end
+end
+    )END");
+    try {
+      _lua.script_file(_script_file);
+    } catch (sol::error &e) {
+      cerr << "Error: " << e.what() << endl;
+      exit(EXIT_FAILURE);
+    }
+    _self = _lua["MADS"];
+    if (method != "" && !_self[method].valid()) {
+      cerr << "Error: the script " << _script_file
+           << " must define a function named MADS:" << method
+           << "() that returns"
+              " a valid JSON string"
+           << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  sol::state _lua;
+  sol::table _self;
+  string _script_file;
+  filesystem::path _script_path;
+  // those are the defauilt paths where the script can be found
+  // RELATIVE to the current executable!
+  vector<filesystem::path> _default_paths = {
+      "./lua",      "./scripts",           "../lua",
+      "../scripts", INSTALL_PREFIX "/lua", INSTALL_PREFIX "/scripts"};
+};
 
 } // namespace MADS
