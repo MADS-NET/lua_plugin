@@ -70,6 +70,8 @@ FetchContent_Populate(luabridge)
 FetchContent_Populate(sol2)
 
 include_directories(${plugin_SOURCE_DIR}/src)
+add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
+add_compile_options(-Wno-unknown-warning-option)
 
 include(ExternalProject)
 ExternalProject_Add(lua
@@ -144,3 +146,4 @@ else()
     ARCHIVE DESTINATION lib
   )
 endif()
+install(DIRECTORY ${SRC_DIR}/lua DESTINATION lua)

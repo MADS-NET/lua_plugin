@@ -19,6 +19,7 @@
 // other includes as needed here
 // clang-format off
 #include <fstream>
+#include <filesystem>
 #include <lua.hpp>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -48,11 +49,10 @@ public:
   // Typically, no need to change this
   string kind() override { return PLUGIN_NAME; }
 
-
   return_type load_data(json const &input, string topic = "") override {
     _lua["MADS"]["topic"] = topic;
     try {
-      _lua["MADS"]["data"] = to_table(_lua, input);
+      _lua["MADS"]["data"] = MADS::to_table(_lua, input);
     } catch (exception &e) {
       cerr << "Error: " << e.what() << endl;
       return return_type::error;
@@ -65,7 +65,7 @@ public:
 
     if (!_agent_id.empty())
       out["agent_id"] = _agent_id;
-    
+
     try {
       out["payload"] = json::parse(_process(_self));
     } catch (exception &e) {
@@ -81,6 +81,11 @@ public:
     _params["script_file"] = "filter.lua";
     _params.merge_patch(*(json *)params);
     _script_file = _params["script_file"];
+    _script_path = filesystem::path(_script_file);
+    if (!_script_path.is_absolute()) {
+      _script_file = MADS::try_paths(_default_paths, _script_path);
+    }
+    cout << "Loading script: " << _script_file << endl;
     prepare__lua();
   }
 
@@ -92,7 +97,14 @@ public:
 private:
   void prepare__lua() {
     _lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string,
-                        sol::lib::table, sol::lib::math);
+                        sol::lib::table, sol::lib::math, sol::lib::string, 
+                        sol::lib::os, sol::lib::io);
+    for (auto &path : _default_paths) {
+      if (!path.is_absolute()) {
+        path = MADS::exec_dir() / path;
+      }
+      LUA_ADD_PATH(_lua, path.string() + "/?.lua");
+    }
     _lua.script(R"END(
 json = require("json")
 MADS = {}
@@ -138,6 +150,17 @@ end
   sol::table _self;
   function<string(sol::table)> _process;
   string _script_file;
+  filesystem::path _script_path;
+  // those are the defauilt paths where the script can be found
+  // RELATIVE to the current executable!
+  vector<filesystem::path> _default_paths = {
+        "../scripts",
+        "../lua",
+        "./scripts",
+        "./lua",
+        INSTALL_PREFIX "/scripts", 
+        INSTALL_PREFIX "/lua" 
+      };
 };
 
 /*
@@ -165,8 +188,10 @@ int main(int argc, char const *argv[]) {
   json params;
   json input, output;
 
-  // Set the parameters
   params["script_file"] = "filter.lua";
+  if (argc > 1) {
+    params["script_file"] = argv[1];
+  }
   plugin.set_params(&params);
 
   plugin.info();
