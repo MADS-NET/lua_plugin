@@ -1,4 +1,4 @@
-# script plugin for MADS
+# Lua plugins for MADS
 
 This is a collection of plugins for [MADS](https://github.com/MADS-NET/MADS). The project creates the plugins `lua_source.plugin`, `lua_filter.plugin`, and `lua_sink.plugin`.
 
