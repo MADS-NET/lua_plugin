@@ -77,7 +77,7 @@ include(ExternalProject)
 ExternalProject_Add(lua
   URL https://www.lua.org/ftp/lua-5.4.3.tar.gz
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND make guess
+  BUILD_COMMAND make guess MYCFLAGS=-fPIC
   BUILD_IN_SOURCE TRUE
   INSTALL_COMMAND make install INSTALL_TOP=${CMAKE_BINARY_DIR}/lua
   DOWNLOAD_EXTRACT_TIMESTAMP TRUE
