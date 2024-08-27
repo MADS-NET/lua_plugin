@@ -120,16 +120,20 @@ else()
 endif()
 include_directories(
   ${json_SOURCE_DIR}/include 
-  ${CMAKE_BINARY_DIR}/lua-prefix/src/lua/src
+  ${CMAKE_BINARY_DIR}/lua/include
   ${sol2_SOURCE_DIR}/include
 )
-link_directories(${CMAKE_BINARY_DIR}/lua-prefix/src/lua/src)
+link_directories(${CMAKE_BINARY_DIR}/lua/lib)
 
 # These plugins are always build and use for testing
 add_plugin(lua_source LIBS liblua.a)
+add_dependencies(lua_source lua)
+
 add_plugin(lua_filter LIBS liblua.a)
+add_dependencies(lua_filter lua)
+
 add_plugin(lua_sink LIBS liblua.a)
-add_dependencies(lua_source lua_filter lua_sink lua)
+add_dependencies(lua_sink lua)
 
 
 # INSTALL ######################################################################
