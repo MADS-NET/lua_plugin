@@ -126,8 +126,8 @@ include_directories(
 link_directories(${CMAKE_BINARY_DIR}/lua-prefix/src/lua/src)
 
 # These plugins are always build and use for testing
-add_plugin(filter LIBS liblua.a)
-add_dependencies(filter lua)
+add_plugin(lua_filter LIBS liblua.a)
+add_dependencies(lua_filter lua)
 
 
 # INSTALL ######################################################################
