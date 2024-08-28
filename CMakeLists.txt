@@ -95,7 +95,7 @@ else()
   ExternalProject_Add(lua
     URL ${LUA_URL}
     CONFIGURE_COMMAND ""
-    BUILD_COMMAND make $<IF:$<BOOL:LINUX>,linux-readline,guess> MYCFLAGS=-fPIC
+    BUILD_COMMAND make $<IF:$<BOOL:${LINUX}>,linux-readline,guess> MYCFLAGS=-fPIC
     BUILD_IN_SOURCE TRUE
     INSTALL_COMMAND make install INSTALL_TOP=${CMAKE_BINARY_DIR}/lua
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
