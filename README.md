@@ -71,7 +71,7 @@ In the last two cases, the script is searched in the following directories, in t
 
 Note that the **executable file is typically the MADS plugin loader**.
 
-All settings are optional; if omitted, the default values are used.
+All settings are optional; if omitted, the default values are used. Note, however, that the section `[lua_xxx]` is mandatory (and can be empty).
 
 
 ## Lua details
@@ -84,15 +84,15 @@ The Lua script defines the table `MADS` with the fields `data` and `topic`. Thes
 
 ### Source plugin (`lua_source.plugin`)
 
-The Lua script **must implement** the function `MADS::get_output()`, which is called by the plugin obtaining a new payload. The function must return a JSON-formatted string (use `json.encode(self.data)`).
+The Lua script **must implement** the function `MADS:get_output()`, which is called by the plugin obtaining a new payload. The function must return a JSON-formatted string (use `json.encode(self.data)`).
 
 ### Filter plugin (`lua_filter.plugin`)
 
-The Lua script **must implement** the function `MADS::process()`, which is called by the plugin for each payload. The function must return a JSON-formatted string (use `json.encode(self.data)`).
+The Lua script **must implement** the function `MADS:process()`, which is called by the plugin for each payload. The function must return a JSON-formatted string (use `json.encode(self.data)`).
 
 ### Sink plugin (`lua_sink.plugin`)
 
-The Lua script **must implement** the function `MADS::deal_with_data()`, which is called by the plugin for each payload. The function must return nothing.
+The Lua script **must implement** the function `MADS:deal_with_data()`, which is called by the plugin for each payload. The function must return nothing.
 
 Note that the library [ansicolors](https://github.com/kikito/ansicolors.lua) is available (but not loaded by default). If you need it, just require it in your script as `local col = require("ansicolors")`.
 
