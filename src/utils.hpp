@@ -96,7 +96,7 @@ std::filesystem::path exec_path() {
 }
 
 std::filesystem::path exec_dir(std::filesystem::path relative = "") {
-  std::string path = exec_path().parent_path();
+  std::filesystem::path path = exec_path().parent_path();
   if (relative != "") {
     return std::filesystem::weakly_canonical(path / relative);
   } else {
@@ -122,13 +122,13 @@ class LuaPlugin {
 protected:
   void prepare_paths(json &params) {
     for (auto &path : params["search_paths"]) {
-      _default_paths.push_back(filesystem::path(path));
+      _default_paths.push_back(filesystem::path(path.get<string>()));
     }
 
     _script_file = params["script_file"];
     _script_path = filesystem::path(_script_file);
     if (!_script_path.is_absolute()) {
-      _script_file = MADS::try_paths(_default_paths, _script_path);
+      _script_file = MADS::try_paths(_default_paths, _script_path).string();
     }
   }
 
@@ -189,9 +189,17 @@ end
   filesystem::path _script_path;
   // those are the defauilt paths where the script can be found
   // RELATIVE to the current executable!
+  // clang-format off
   vector<filesystem::path> _default_paths = {
-      "./lua",      "./scripts",           "../lua",
-      "../scripts", INSTALL_PREFIX "/lua", INSTALL_PREFIX "/scripts"};
+      "./lua",      
+      "./scripts",           
+      "../lua",
+      "../scripts", 
+      "../../lua",
+      "../../scripts", 
+      INSTALL_PREFIX "/lua", 
+      INSTALL_PREFIX "/scripts"};
+  // clang-format on
 };
 
 } // namespace MADS

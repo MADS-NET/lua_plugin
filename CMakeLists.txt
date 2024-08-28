@@ -71,7 +71,10 @@ FetchContent_Populate(sol2)
 
 include_directories(${plugin_SOURCE_DIR}/src)
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
-add_compile_options(-Wno-unknown-warning-option)
+
+if(NOT WIN32)
+  add_compile_options(-Wno-unknown-warning-option)
+endif()
 
 set(LUA_URL https://www.lua.org/ftp/lua-5.4.3.tar.gz)
 include(ExternalProject)
@@ -146,14 +149,16 @@ include_directories(
   ${sol2_SOURCE_DIR}/include
 )
 
+set(LUA_LIB $<IF:$<BOOL:${WIN32}>,lua.lib,liblua.a>)
+
 # These plugins are always build and use for testing
-add_plugin(lua_source LIBS liblua.a)
+add_plugin(lua_source LIBS ${LUA_LIB})
 add_dependencies(lua_source lua)
 
-add_plugin(lua_filter LIBS liblua.a)
+add_plugin(lua_filter LIBS ${LUA_LIB})
 add_dependencies(lua_filter lua)
 
-add_plugin(lua_sink LIBS liblua.a)
+add_plugin(lua_sink LIBS ${LUA_LIB})
 add_dependencies(lua_sink lua)
 
 
