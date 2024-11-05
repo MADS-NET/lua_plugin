@@ -47,27 +47,22 @@ FetchContent_Declare(json
   GIT_SHALLOW    TRUE
 )
 
-FetchContent_Declare(plugin 
+FetchContent_MakeAvailable(pugg json)
+
+FetchContent_Populate(plugin 
   GIT_REPOSITORY https://github.com/pbosetti/mads_plugin.git
   GIT_TAG        HEAD
   GIT_SHALLOW    TRUE
 )
 
-FetchContent_Declare(luabridge
-  GIT_REPOSITORY https://github.com/kunitoki/LuaBridge3.git
-  GIT_TAG        HEAD
-  GIT_SHALLOW    TRUE
-)
-
-FetchContent_Declare(sol2
+FetchContent_Populate(sol2
   GIT_REPOSITORY https://github.com/ThePhD/sol2.git
   GIT_TAG        v3.3.1
   GIT_SHALLOW    TRUE
 )
-FetchContent_MakeAvailable(pugg json)
-FetchContent_Populate(plugin)
-FetchContent_Populate(luabridge)
-FetchContent_Populate(sol2)
+
+
+
 
 include_directories(${plugin_SOURCE_DIR}/src)
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
