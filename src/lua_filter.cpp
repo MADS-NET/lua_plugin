@@ -49,7 +49,7 @@ public:
   // Typically, no need to change this
   string kind() override { return PLUGIN_NAME; }
 
-  return_type load_data(json const &input, string topic = "") override {
+  return_type load_data(json const &input, string topic = "", vector<unsigned char> const *blob = nullptr) override {
     _lua["MADS"]["topic"] = topic;
     try {
       _lua["MADS"]["data"] = MADS::to_table(_lua, input);
@@ -60,7 +60,7 @@ public:
     return return_type::success;
   }
 
-  return_type process(json &out) override {
+  return_type process(json &out, vector<unsigned char> *blob = nullptr) override {
     out.clear();
 
     if (!_agent_id.empty())
@@ -76,11 +76,11 @@ public:
     return return_type::success;
   }
 
-  void set_params(void const *params) override {
+  void set_params(const json &params) override {
     Filter::set_params(params);
     _params["script_file"] = "filter.lua";
     _params["search_paths"] = json::array();
-    _params.merge_patch(*(json *)params);
+    _params.merge_patch(params);
 
     prepare_paths(_params);
     prepare_lua("process");
@@ -126,7 +126,7 @@ int main(int argc, char const *argv[]) {
   if (argc > 1) {
     params["script_file"] = argv[1];
   }
-  plugin.set_params(&params);
+  plugin.set_params(params);
 
   plugin.info();
 

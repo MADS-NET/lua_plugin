@@ -4,7 +4,7 @@ This is a collection of plugins for [MADS](https://github.com/MADS-NET/MADS). Th
 
 The plugins provide an interface to [Lua](https://lua.org) scripts, allowing you to run Lua scripts from MADS.
 
-*Required MADS version: 1.0.3.*
+> This plugin has been updated for MADS v2
 
 
 ## Supported platforms

@@ -50,8 +50,7 @@ public:
   // Typically, no need to change this
   string kind() override { return PLUGIN_NAME; }
 
-  return_type get_output(json &out,
-                         std::vector<unsigned char> *blob = nullptr) override {
+  return_type get_output(json &out, vector<unsigned char> *blob = nullptr) override {
     out.clear();
 
     if (!_agent_id.empty()) out["agent_id"] = _agent_id;
@@ -66,11 +65,11 @@ public:
     return return_type::success;
   }
 
-  void set_params(void const *params) override {
+  void set_params(const json &params) override {
     Source::set_params(params);
     _params["script_file"] = "source.lua";
     _params["search_paths"] = json::array();
-    _params.merge_patch(*(json *)params);
+    _params.merge_patch(params);
 
     prepare_paths(_params);
     prepare_lua("get_output");
@@ -116,7 +115,7 @@ int main(int argc, char const *argv[]) {
   if (argc > 1) {
     params["script_file"] = argv[1];
   }
-  plugin.set_params(&params);
+  plugin.set_params(params);
 
   // Process data
   plugin.get_output(output);
