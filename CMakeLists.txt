@@ -17,7 +17,15 @@ if(CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
 endif()
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set_property(CACHE CMAKE_INSTALL_PREFIX PROPERTY VALUE "/usr/local")
+  execute_process(
+    COMMAND mads -p
+    OUTPUT_VARIABLE MADS_PREFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+  if(MADS_PREFIX)
+    set(CMAKE_INSTALL_PREFIX "${MADS_PREFIX}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
+  endif()
 endif()
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}") 
@@ -37,7 +45,7 @@ include(FetchContent)
 # pugg is for the plugin system
 FetchContent_Declare(pugg 
   GIT_REPOSITORY https://github.com/pbosetti/pugg.git
-  GIT_TAG        1.0.2
+  GIT_TAG        1.1.0
   GIT_SHALLOW    TRUE
   EXCLUDE_FROM_ALL
 )
@@ -45,17 +53,15 @@ FetchContent_Declare(pugg
 set(BUILD_TESTING OFF CACHE INTERNAL "")
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 FetchContent_Declare(json
-  GIT_REPOSITORY https://github.com/nlohmann/json.git
-  GIT_TAG        v3.11.3
-  GIT_SHALLOW    TRUE
-  EXCLUDE_FROM_ALL
+  URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+  DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 
 FetchContent_MakeAvailable(pugg json)
 
 FetchContent_Populate(plugin 
   GIT_REPOSITORY https://github.com/pbosetti/mads_plugin.git
-  GIT_TAG        v2.0-P7
+  GIT_TAG        v2.3-P7
   GIT_SHALLOW    TRUE
 )
 
